@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fortune Cookie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:         #06070d;
+      --gold:       #d4a827;
+      --gold-light: #f0c84e;
+      --gold-pale:  #fdeea0;
+      --gold-dark:  #9a6c0a;
+      --gold-glow:  rgba(212, 168, 39, 0.35);
+      --text:       #f2e8d0;
+      --text-muted: rgba(242, 232, 208, 0.5);
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse 90% 70% at 50% 15%, #1a1238 0%, #0b0e1c 45%, #06070d 100%);
+      color: var(--text);
+      font-family: 'Playfair Display', Georgia, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Vignette */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 65% 65% at 50% 50%, transparent 35%, rgba(4,4,10,0.65) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Stars ─────────────────────────────────────────────────── */
+    #stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle var(--dur) ease-in-out infinite var(--del);
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: var(--lo); transform: scale(1); }
+      50%     { opacity: var(--hi); transform: scale(1.35); }
+    }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      padding: 28px 20px 36px;
+      width: 100%;
+      max-width: 580px;
+    }
+
+    /* ── Title ─────────────────────────────────────────────────── */
+    .title {
+      font-family: 'Cinzel', serif;
+      font-weight: 400;
+      font-size: clamp(0.9rem, 3.5vw, 1.5rem);
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-shadow: 0 0 28px var(--gold-glow), 0 0 60px rgba(212,168,39,0.12);
+    }
+
+    /* ── Cookie wrapper ────────────────────────────────────────── */
+    .cookie-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 240px;
+      height: 220px;
+    }
+
+    .cookie-scene {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      animation: floatCookie 4s ease-in-out infinite;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cookie-scene:hover .cookie-svg {
+      filter: drop-shadow(0 0 16px rgba(212,168,39,0.55)) drop-shadow(0 0 38px rgba(212,168,39,0.22));
+    }
+
+    @keyframes floatCookie {
+      0%,100% { transform: translateY(0px) rotate(0deg); }
+      30%     { transform: translateY(-10px) rotate(0.6deg); }
+      70%     { transform: translateY(-5px) rotate(-0.4deg); }
+    }
+
+    @keyframes shakeCookie {
+      0%,100% { transform: rotate(0deg) translateX(0); }
+      10%     { transform: rotate(-5deg) translateX(-3px); }
+      22%     { transform: rotate(6deg)  translateX(4px); }
+      34%     { transform: rotate(-6deg) translateX(-4px); }
+      46%     { transform: rotate(5deg)  translateX(3px); }
+      58%     { transform: rotate(-4deg) translateX(-3px); }
+      70%     { transform: rotate(3deg)  translateX(2px); }
+      82%     { transform: rotate(-2deg) translateX(-1px); }
+      92%     { transform: rotate(1deg)  translateX(0); }
+    }
+
+    .cookie-scene.is-shaking {
+      animation: shakeCookie 0.56s ease-in-out forwards !important;
+    }
+
+    /* ── SVG halves ────────────────────────────────────────────── */
+    .cookie-svg {
+      width: 200px;
+      height: 176px;
+      overflow: visible;
+    }
+
+    #top-half {
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      transition: transform 0.72s cubic-bezier(0.34, 1.15, 0.64, 1),
+                  opacity  0.72s ease;
+    }
+    #bottom-half {
+      transform-box: fill-box;
+      transform-origin: 50% 0%;
+      transition: transform 0.72s cubic-bezier(0.34, 1.15, 0.64, 1),
+                  opacity  0.72s ease;
+    }
+
+    /* ── Crack light ───────────────────────────────────────────── */
+    .crack-light {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 6px;
+      height: 0;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(180deg,
+        transparent 0%,
+        #fffae0 25%,
+        var(--gold-pale) 50%,
+        #fffae0 75%,
+        transparent 100%);
+      border-radius: 3px;
+      opacity: 0;
+      filter: blur(4px);
+      pointer-events: none;
+    }
+    .crack-light.burst {
+      animation: lightBurst 0.9s ease-out forwards;
+    }
+    @keyframes lightBurst {
+      0%   { height: 0;    opacity: 0;   width: 6px;  filter: blur(3px); }
+      12%  { height: 46px; opacity: 1;   width: 8px;  filter: blur(5px); }
+      40%  { height: 72px; opacity: 0.9; width: 18px; filter: blur(10px); }
+      70%  { height: 92px; opacity: 0.5; width: 26px; filter: blur(14px); }
+      100% { height:110px; opacity: 0;   width: 34px; filter: blur(20px); }
+    }
+
+    /* ── Hint ──────────────────────────────────────────────────── */
+    .hint {
+      font-style: italic;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .hint.gone {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    /* ── Fortune section ───────────────────────────────────────── */
+    .fortune-section {
+      width: 100%;
+      max-width: 500px;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .fortune-paper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .fortune-paper.visible { opacity: 1; transform: translateY(0); }
+
+    /* Ornamental divider */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,39,0.55), transparent);
+    }
+    .ornament-gem {
+      font-family: 'Cinzel', serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.35em;
+      color: rgba(212,168,39,0.75);
+    }
+
+    .fortune-quote {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2.8vw, 1.28rem);
+      line-height: 1.78;
+      text-align: center;
+      color: var(--text);
+      text-shadow: 0 0 45px rgba(212,168,39,0.18);
+      padding: 4px 20px;
+      max-width: 460px;
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────── */
+    .button-row {
+      display: flex;
+      gap: 13px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease 0.32s, transform 0.6s ease 0.32s;
+    }
+    .button-row.visible { opacity: 1; transform: translateY(0); }
+
+    .btn {
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 11px 26px;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.24s ease;
+      outline: none;
+    }
+    .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #b07010, var(--gold) 50%, #e8b830);
+      background-size: 220% auto;
+      background-position: left center;
+      color: #1a0f00;
+      border: none;
+      box-shadow: 0 4px 22px rgba(212,168,39,0.28), 0 1px 4px rgba(0,0,0,0.35);
+    }
+    .btn-primary:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 7px 30px rgba(212,168,39,0.48), 0 2px 6px rgba(0,0,0,0.35);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--gold-light);
+      border: 1px solid rgba(212,168,39,0.38);
+    }
+    .btn-secondary:hover {
+      background: rgba(212,168,39,0.07);
+      border-color: rgba(212,168,39,0.65);
+      transform: translateY(-2px);
+    }
+    .btn-secondary:active { transform: translateY(0); }
+
+    /* ── Counter ───────────────────────────────────────────────── */
+    .fortune-counter {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.5s ease 0.8s;
+    }
+    .fortune-counter.visible { opacity: 1; }
+
+    /* ── Copy toast ────────────────────────────────────────────── */
+    .copy-toast {
+      position: fixed;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-70px);
+      background: rgba(10,9,22,0.92);
+      border: 1px solid rgba(212,168,39,0.38);
+      color: var(--gold-light);
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.42s ease;
+      opacity: 0;
+      z-index: 200;
+      white-space: nowrap;
+    }
+    .copy-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .container { gap: 20px; }
+      .cookie-wrapper { width: 190px; height: 180px; }
+      .cookie-svg { width: 168px; height: 148px; }
+      .fortune-quote { font-size: 1rem; }
+    }
+    @media (max-height: 620px) {
+      .container { gap: 16px; padding-top: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<main class="container">
+
+  <h1 class="title">Fortune Cookie</h1>
+
+  <!-- ── Cookie ──────────────────────────────────────── -->
+  <div class="cookie-wrapper">
+    <div class="cookie-scene" id="cookieScene" role="button" tabindex="0" aria-label="Click to crack fortune cookie">
+
+      <svg class="cookie-svg" viewBox="0 0 200 176" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <!-- Top half: warm light gold -->
+          <linearGradient id="gTop" x1="5%" y1="0%" x2="95%" y2="100%">
+            <stop offset="0%"   stop-color="#f8dc7a"/>
+            <stop offset="30%"  stop-color="#e8a920"/>
+            <stop offset="100%" stop-color="#a86408"/>
+          </linearGradient>
+          <!-- Bottom half: deeper amber -->
+          <linearGradient id="gBot" x1="5%" y1="0%" x2="95%" y2="100%">
+            <stop offset="0%"   stop-color="#dc9618"/>
+            <stop offset="55%"  stop-color="#b46a08"/>
+            <stop offset="100%" stop-color="#8a4c04"/>
+          </linearGradient>
+          <!-- Specular shine -->
+          <linearGradient id="gShine" x1="0%" y1="0%" x2="45%" y2="100%">
+            <stop offset="0%"   stop-color="rgba(255,255,255,0.38)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </linearGradient>
+          <!-- Drop shadow -->
+          <filter id="fDrop" x="-14%" y="-14%" width="128%" height="128%">
+            <feDropShadow dx="1" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.6)" flood-opacity="1"/>
+          </filter>
+        </defs>
+
+        <!-- Bottom half (behind) -->
+        <g id="bottom-half">
+          <path d="M 28,88 L 172,88 C 172,138 134,168 100,164 C 66,168 28,138 28,88 Z"
+                fill="url(#gBot)" filter="url(#fDrop)"/>
+          <!-- subtle curved highlight at top of bottom lobe -->
+          <path d="M 55,103 C 70,112 86,116 100,116 C 114,116 130,112 145,103 C 136,114 120,120 100,120 C 80,120 64,114 55,103 Z"
+                fill="rgba(255,200,80,0.13)"/>
+          <!-- vertical seam hint -->
+          <path d="M 100,88 Q 103,126 100,164" fill="none" stroke="rgba(70,35,0,0.22)" stroke-width="1.4"/>
+        </g>
+
+        <!-- Top half (front) -->
+        <g id="top-half">
+          <path d="M 28,88 C 28,36 66,6 100,9 C 134,6 172,36 172,88 Z"
+                fill="url(#gTop)" filter="url(#fDrop)"/>
+          <!-- large specular highlight -->
+          <path d="M 44,50 C 56,28 74,14 90,10 C 77,22 60,40 54,62 Z"
+                fill="url(#gShine)"/>
+          <!-- smaller secondary highlight -->
+          <path d="M 72,28 C 81,19 92,14 99,12 C 93,19 83,30 77,43 Z"
+                fill="rgba(255,255,255,0.2)"/>
+          <!-- vertical fold seam -->
+          <path d="M 100,9 Q 97,50 100,88" fill="none" stroke="rgba(70,35,0,0.22)" stroke-width="1.4"/>
+        </g>
+
+        <!-- Crack seam line -->
+        <line id="crackSeam" x1="28" y1="88" x2="172" y2="88"
+              stroke="rgba(55,28,2,0.7)" stroke-width="1.5"/>
+      </svg>
+
+      <!-- warm light burst when cracking -->
+      <div class="crack-light" id="crackLight"></div>
+    </div>
+  </div>
+
+  <p class="hint" id="hint">click the cookie to reveal your fortune</p>
+
+  <!-- ── Fortune section ─────────────────────────────── -->
+  <div class="fortune-section">
+
+    <div class="fortune-paper" id="fortunePaper">
+      <div class="ornament"><span class="ornament-gem">✦ your fortune ✦</span></div>
+      <p class="fortune-quote" id="fortuneQuote"></p>
+      <div class="ornament"><span class="ornament-gem">✦ &nbsp; ✦ &nbsp; ✦</span></div>
+    </div>
+
+    <div class="button-row" id="buttonRow">
+      <button class="btn btn-primary" id="anotherBtn">Another Fortune</button>
+      <button class="btn btn-secondary" id="copyBtn">Copy</button>
+    </div>
+
+    <p class="fortune-counter" id="fortuneCounter"></p>
+  </div>
+
+</main>
+
+<div class="copy-toast" id="copyToast">Fortune copied ✦</div>
+
+<script>
+// ─── Fortunes ────────────────────────────────────────────────────────────────
+const FORTUNES = [
+  "The man who chases two rabbits catches Netflix instead.",
+  "To understand the river, one must first become the wifi password.",
+  "Suffering is optional. Parking is not.",
+  "You are not stuck in traffic. You are traffic. Also, you are late.",
+  "The quietest person in the room is either the wisest or simply has no opinion on this particular topic.",
+  "A flower does not think of competing. It also does not pay rent.",
+  "The journey of a thousand miles begins with a single forgotten charger.",
+  "He who asks is a fool for five minutes. He who does not ask remains a fool, but with more confidence.",
+  "Even the tallest mountain must eventually deal with tourists.",
+  "The wise speak when they have something to say. Others speak when they have a notification.",
+  "Do not look where you fell. Look where your phone landed.",
+  "A bird in the hand is worth two in the bush, unless it is a screenshot of a bird.",
+  "The universe is under no obligation to make sense to you. Neither is your group chat.",
+  "Before enlightenment: chop wood, carry water. After enlightenment: still waiting for the delivery.",
+  "The secret of getting started is closing 47 browser tabs.",
+  "Fall seven times, stand up eight, check your phone, fall again.",
+  "He who knows himself is enlightened. He who knows his streaming password is a god among roommates.",
+  "One who sleeps on the floor cannot fall out of bed. But one who sleeps on the floor also has a bad back.",
+  "The nail that sticks out gets hammered down. The nail that lies flat still gets stepped on at 3am.",
+  "To be certain is delusional. To be certain you left the oven on is a different matter entirely.",
+  "Even a broken clock is right twice a day, and at least it does not send calendar invites.",
+  "The bamboo that bends is stronger than the oak that resists — but both would lose to a spreadsheet.",
+  "Peace comes from within. Unless the wifi is down.",
+  "Life is a journey, not a destination. Except when you have already paid for parking.",
+  "The obstacle is the path. Unless the obstacle is a terms-and-conditions page.",
+  "An empty vessel makes the most noise. A full vessel just needs to charge first.",
+  "You cannot step into the same river twice, but you can re-read the same email three times and still not respond.",
+  "The best time to plant a tree was twenty years ago. The second-best time also requires realistic expectations about soil.",
+  "Not knowing where your keys are is the beginning of all mornings.",
+  "Water penetrates mountains in time. The inbox, however, remains unconquered.",
+  "A gem cannot be polished without friction. Nor can a one-star review.",
+  "Do not follow the path. Make your own path. Or just use GPS, honestly.",
+  "The clouds above do not compete with each other. They have not discovered LinkedIn.",
+  "When the student is ready, the teacher appears. When the student is not ready, the teacher sends a follow-up.",
+  "That which does not kill us makes us stronger. That which does kill us at least generates engagement.",
+  "The answer you seek is already within you. Also try turning it off and on again.",
+  "He who has a charger can endure most meetings.",
+  "Act without expectation. Unless you have a tracking number.",
+  "The superior person acts before speaking. The inferior person speaks before thinking. The third person never loads.",
+  "Between stimulus and response there is a space. In that space lives a push notification.",
+  "Not all those who wander are lost. Some have just accidentally opened Apple Maps.",
+  "The mountain does not laugh at the river for being low. Both, however, avoid the comment section.",
+  "To the mind that is still, the whole universe surrenders. To the restless mind, at least the scrolling is satisfying.",
+  "One kind word can warm three winter months. One passive-aggressive email can warm three office years.",
+  "The pine does not envy the willow. Neither has received a performance review.",
+  "Even a journey of a thousand miles cannot begin when your phone is at four percent and there is no charger in sight.",
+  "The door of opportunity opens wide — but first you must update your software to continue."
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let appState = 'idle'; // 'idle' | 'cracking' | 'open' | 'resetting'
+let deck = [];
+let currentFortune = '';
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function nextFortune() {
+  if (!deck.length) deck = shuffle(FORTUNES);
+  currentFortune = deck.pop();
+  return currentFortune;
+}
+
+// ─── DOM ──────────────────────────────────────────────────────────────────────
+const cookieScene    = document.getElementById('cookieScene');
+const topHalf        = document.getElementById('top-half');
+const bottomHalf     = document.getElementById('bottom-half');
+const crackLight     = document.getElementById('crackLight');
+const hint           = document.getElementById('hint');
+const fortunePaper   = document.getElementById('fortunePaper');
+const fortuneQuote   = document.getElementById('fortuneQuote');
+const buttonRow      = document.getElementById('buttonRow');
+const fortuneCounter = document.getElementById('fortuneCounter');
+const anotherBtn     = document.getElementById('anotherBtn');
+const copyBtn        = document.getElementById('copyBtn');
+const copyToast      = document.getElementById('copyToast');
+
+// ─── Cookie helpers ───────────────────────────────────────────────────────────
+function setHalves(open) {
+  if (open) {
+    topHalf.style.transform    = 'translate(-18px, -46px) rotate(-19deg)';
+    topHalf.style.opacity      = '0.72';
+    bottomHalf.style.transform = 'translate(18px, 46px) rotate(19deg)';
+    bottomHalf.style.opacity   = '0.72';
+  } else {
+    topHalf.style.transform    = '';
+    topHalf.style.opacity      = '';
+    bottomHalf.style.transform = '';
+    bottomHalf.style.opacity   = '';
+  }
+}
+
+// ─── Core actions ─────────────────────────────────────────────────────────────
+function crack() {
+  if (appState !== 'idle') return;
+  appState = 'cracking';
+
+  cookieScene.style.animation = 'none';
+  cookieScene.classList.add('is-shaking');
+
+  setTimeout(() => {
+    cookieScene.classList.remove('is-shaking');
+
+    setTimeout(() => {
+      // Light burst (force reflow to restart animation)
+      crackLight.classList.remove('burst');
+      void crackLight.offsetWidth;
+      crackLight.classList.add('burst');
+
+      setHalves(true);
+      appState = 'open';
+
+      setTimeout(showFortune, 360);
+    }, 85);
+  }, 560);
+}
+
+function showFortune() {
+  const text = nextFortune();
+  fortuneQuote.textContent = `"${text}"`;
+
+  hint.classList.add('gone');
+
+  setTimeout(() => fortunePaper.classList.add('visible'), 80);
+  setTimeout(() => {
+    buttonRow.classList.add('visible');
+    fortuneCounter.classList.add('visible');
+    fortuneCounter.textContent =
+      `fortune ${FORTUNES.length - deck.length} of ${FORTUNES.length}`;
+  }, 320);
+}
+
+function resetAndCrack() {
+  if (appState !== 'open') return;
+  appState = 'resetting';
+
+  // Fade out fortune
+  fortunePaper.classList.remove('visible');
+  buttonRow.classList.remove('visible');
+  fortuneCounter.classList.remove('visible');
+
+  // After fortune fades, return cookie halves
+  setTimeout(() => {
+    setHalves(false);
+
+    // After transition completes, go idle then auto-crack
+    setTimeout(() => {
+      cookieScene.style.animation = '';
+      appState = 'idle';
+      setTimeout(crack, 420);
+    }, 780);
+  }, 360);
+}
+
+// ─── Events ───────────────────────────────────────────────────────────────────
+cookieScene.addEventListener('click', crack);
+cookieScene.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); crack(); }
+});
+
+anotherBtn.addEventListener('click', (e) => { e.stopPropagation(); resetAndCrack(); });
+
+copyBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!currentFortune) return;
+
+  const show = () => {
+    copyToast.classList.add('show');
+    setTimeout(() => copyToast.classList.remove('show'), 2700);
+  };
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(currentFortune).then(show).catch(() => fallbackCopy(show));
+  } else {
+    fallbackCopy(show);
+  }
+});
+
+function fallbackCopy(cb) {
+  const ta = document.createElement('textarea');
+  ta.value = currentFortune;
+  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;pointer-events:none';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch (_) {}
+  document.body.removeChild(ta);
+}
+
+// ─── Stars ────────────────────────────────────────────────────────────────────
+(function spawnStars() {
+  const container = document.getElementById('stars');
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 140; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const sz  = (Math.random() * 1.7 + 0.3).toFixed(1);
+    const lo  = (Math.random() * 0.12 + 0.03).toFixed(2);
+    const hi  = (Math.random() * 0.55 + 0.22).toFixed(2);
+    el.style.cssText = [
+      `left:${(Math.random()*100).toFixed(2)}%`,
+      `top:${(Math.random()*100).toFixed(2)}%`,
+      `width:${sz}px`, `height:${sz}px`,
+      `--dur:${(Math.random()*3.5+2).toFixed(1)}s`,
+      `--del:-${(Math.random()*5).toFixed(1)}s`,
+      `--lo:${lo}`, `--hi:${hi}`
+    ].join(';');
+    frag.appendChild(el);
+  }
+  container.appendChild(frag);
+})();
+</script>
+
+</body>
+</html>
