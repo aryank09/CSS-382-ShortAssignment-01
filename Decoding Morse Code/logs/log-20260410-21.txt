@@ -1,0 +1,53 @@
+================================================================================
+AI interaction log — log-20260410-21.txt
+Date: 2026-04-10 (twenty-first interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+lets try to stick with THE as the first word and lets try english frequnecy stuff
+
+What we did
+------------
+1. Confirmed ciphertext starts with standard Morse for THE (6 symbols); remainder
+   length 100.
+
+2. `morse_explore.py` already uses **word Zipf** (`wordfreq.zipf_frequency`) in
+   Viterbi for `--mode remainder` (sum over words). Running with defaults favors
+   very common short tokens (e.g. IT) → word salad with high unigram sum.
+
+3. Added `freq_beam_decode.py` (repo root next to `morse_explore.py`):
+   - **Local score**: sum_w [ zipf(w) + bigram_weight * zipf("prev w") ] with
+     prev starting at "THE".
+   - **Full-line score**: zipf_frequency("the " + words..., "en") — strong
+     signal for natural collocations; separates proverb-like lines from junk.
+   - **N-best DP** with per-(position, last_word) beam `--topk` (keeps multiple
+     partial paths).
+   - **`--allow-extra`** / **`--ban`** to tune short words (IS, FAR need
+     `--allow-extra` when using `--min-len 4 --no-short-ok`; otherwise IS is
+     dropped and the IMPRESSION… tiling cannot appear).
+   - **`--reference-sentence`** prints Zipf numbers for a known valid tiling.
+
+4. Key frequency observation (wordfreq, English):
+   - Dictionary tiling: THE IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY
+     - local ≈ 72.96
+     - full-line Zipf ≈ **4.11**
+   - High **local** paths often use IMPEDE / TEST / TWAT etc. (local ~84–93)
+     with **lower** full-line Zipf (~2.6–2.9) than the proverb-like line.
+   - So: **unigram + phrase-bigram sums reward Morse spam**; **full-line phrase
+     Zipf** is a better *automatic* English prior for ranking *among* valid
+     tilings — still not a substitute for human “meaningful sentence” check.
+
+Commands run
+------------
+cd "/Users/aryankhanna/Documents/GitHub/CSS-382-AI/Decoding Morse Code"
+python3 morse_explore.py --mode remainder
+python3 morse_explore.py --mode remainder --min-len 4 --no-short-ok
+python3 freq_beam_decode.py --min-len 4 --no-short-ok --topk 120 --sort full --show 15
+python3 freq_beam_decode.py --reference-sentence "IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY"
+
+Code path
+---------
+- New script: `freq_beam_decode.py` (full text in repo).
+
+================================================================================

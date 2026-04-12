@@ -1,0 +1,33 @@
+================================================================================
+AI interaction log — log-20260412-2.txt
+Date: 2026-04-12 (second interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+what's the probability of replacing beach with than
+
+Answer
+------
+Under ITU Morse with letters run together (no inter-letter gaps), **BEACH** and
+**THAN** are not the same encoding:
+
+  BEACH  → 15 symbols: -.....--.-.....
+  THAN   →  9 symbols: -.....--.
+
+So for a **fixed ciphertext**, the event “this word slot decodes as THAN instead
+of BEACH” has probability **0**: THAN cannot occupy the same substring as BEACH.
+Any decode that reads … IMPORTANT THAN REALITY would require a **different**
+Morse string (different length/pattern) than the one that encodes … IMPORTANT
+BEACH REALITY.
+
+Code (verification)
+-------------------
+```python
+MORSE = { ... }  # ITU A–Z
+def enc(w):
+    return ''.join(MORSE[c] for c in w.upper())
+# BEACH 15 symbols; THAN 9 symbols — not equal
+```
+
+================================================================================

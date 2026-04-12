@@ -1,0 +1,33 @@
+================================================================================
+AI interaction log — log-20260410-20.txt
+Date: 2026-04-10 (twentieth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+what are the ones we have thought to be the sentences
+
+Answer prepared
+---------------
+Candidate sentences/lines discussed so far:
+
+1) THE IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY
+   - Fully dictionary-valid and full Morse re-encode match under no explicit word-gap symbols.
+   - Rejected as intended plaintext because meaning is awkward; expected phrase would use THAN, not BEACH.
+
+2) THE .. IMPASSE AMNESIA COMET IMPORTANT HANTS REALITY
+   - Produced under an earlier incorrect boundary handling (`body = s[6:]` when first gap after THE was not consumed correctly).
+   - Rejected on both model correctness and meaning.
+
+3) THE .. MATER SHONE EVERY METES YAMEN WANES CHAIR SATEM
+   - Produced after fixing no-trailing-gap Viterbi reconstruction in the flexible-gap model.
+   - Full-string consistent with that model, but still weak/non-natural English; not accepted.
+
+4) Various `-`-between-words outputs (multiple word-salad lines)
+   - Technically tile-able in places.
+   - Rejected as non-meaningful English.
+
+Current status:
+- No single sentence is accepted yet as both dictionary-valid and clearly meaningful under an agreed spacing/segmentation rule.
+
+================================================================================

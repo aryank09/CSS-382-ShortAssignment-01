@@ -1,0 +1,44 @@
+---
+description: Morse decoding project context, English plaintext assumption, and AI interaction logging
+alwaysApply: true
+---
+
+# Morse code decoding project
+
+## What we treat as reliable
+
+- The plaintext **sentence starts with the word THE** (standard ITU Morse for **T**, **H**, **E** concatenated).
+- The full decode must read as a **meaningful English sentence** (coherent grammar and sense), not merely a sequence of dictionary tokens.
+
+## Goal
+
+- This work is about **decoding Morse code**.
+- The ciphertext to decode is in **`morse_code.txt`** at the project root. Read and work from that file unless the author points elsewhere.
+
+## Word list (authoritative)
+
+- **Every decoded word must appear in `dictionary.txt`** at the project root. That file is the **only** approved word source for validating tokens (do not use `/usr/share/dict/words`, random word lists, or ad‑hoc vocabulary unless the author switches the file).
+
+## Verification workflow (required)
+
+1. **Hypothesize** a decoding (letter runs, word boundaries, spacing rules—whatever the model uses).
+2. **For each token** you treat as an English word, **double-check** it exists in **`dictionary.txt`** (e.g. case-insensitive match to the file’s uppercase lines, or `grep -E '^WORD$' dictionary.txt` with `WORD` in the same form as the file).
+3. If **any** token is missing from **`dictionary.txt`**, that segmentation is **invalid** for this project—go back and try another split or rule.
+4. Only after **every** token passes the file check, **confirm** the line is a **meaningful sentence** (readable English). Reject dictionary-valid but nonsensical strings.
+
+## Scoring / tooling note
+
+- Scripts may still rank candidates (e.g. frequency heuristics) to narrow search space, but **dictionary membership + meaningful sentence** override raw scores.
+
+## AI interaction logs
+
+- **Record each AI interaction** in its own plain text file.
+- **Naming:** `log-YYYYMMDD-N.txt`
+  - Use the **calendar date** of the interaction (year **2026** unless you explicitly change era).
+  - **N** is the **interaction number that day**, starting at `1` for the first conversation on that date, then `2`, `3`, … for later sessions the same day.
+- **Example:** `log-20260321-1.txt` = 2026-03-21, first interaction that day.
+- **Code and tooling:** Whenever you write or run **code** (scripts, notebooks, one-off shell/Python snippets, pipelines, etc.) to decode or analyze ciphertext, **include that code in the log** for that interaction (full text or the repo path to a saved script if the same code is checked in). The goal is reproducibility: someone can redo the steps from the log alone.
+
+## Project reset note
+
+The author **lost earlier work and logs** from previous days with the AI and is **starting over**. Do not assume prior session context unless it appears in-repo (rules, logs, code).

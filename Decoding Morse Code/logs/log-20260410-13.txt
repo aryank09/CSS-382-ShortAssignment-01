@@ -1,0 +1,60 @@
+================================================================================
+AI interaction log — log-20260410-13.txt
+Date: 2026-04-10 (thirteenth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+I'm not sure what the spacing rule is or even if exists that's your job to figure out
+
+Investigation (dictionary.txt only for word validity; one-off Python)
+----------------------------------------------------------------------
+Compared several **word-boundary** models on the ciphertext after fixing **THE**
+(standard Morse, 6 symbols) for the **100-symbol remainder**, and on the **full**
+106-symbol string for some models.
+
+Structural note
+---------------
+Run-length view: 47 alternating runs of `.` and `-`; longest dot run 10, longest
+dash run 5. Long dot runs are **normal** when letters like **E** and **I** are
+concatenated—not by themselves proof of “space bars.”
+
+Findings
+--------
+1. **No extra spacing (concatenated ITU Morse for A–Z)**  
+   Every symbol belongs to some letter; word breaks are **not** encoded in the
+   string—only **inferred** by splitting into dictionary words. This is the usual
+   interpretation of “Morse with no spaces provided.”
+
+2. **Mandatory delimiter `..` between every word** (remainder after THE)  
+   **No** tiling exists using **dictionary.txt** words, **even allowing any word
+   length** (tested with Viterbi reachability).
+
+3. **Mandatory delimiter `--` between every word** (same)  
+   **No** tiling exists, **any** word length.
+
+   ⇒ These two “always a double-dot / double-dash gap” rules are **ruled out**
+   for this file (under ITU letter codes + your dictionary).
+
+4. **Exactly one `.` between words** or **exactly one `-` between words**  
+   Tilings **do** exist (tested on remainder; **any** word length allowed). So
+   those are **hypothetical custom** rules—they **reuse** symbols that normally
+   mean **E** or **T**, so they are **not** the standard reading.
+
+5. **Flexible** “`.` **or** `--`” and “`..` **or** `-`” between words  
+   Tilings exist under constraints tested earlier (e.g. min word length 5 on
+   remainder); more **degrees of freedom**, weaker as a unique inference.
+
+Conclusion (for the author)
+---------------------------
+- There is **no evidence in the ciphertext alone** of a **separate, consistent
+  space alphabet** like “always `..`” or “always `--`” between words—those rules
+  **cannot** decode the tail after **THE** with your dictionary at all.
+- The **default, minimal assumption** is: **no dedicated spacing symbols**; all
+  dots and dashes are **Morse for letters**, and **word boundaries are missing**
+  (underspecified—many word chains fit).
+- **Optional** custom rules (e.g. single `.` or `-` between words) are **not**
+  uniquely determined by the file; they need an external spec if that is what
+  the course intended.
+
+================================================================================

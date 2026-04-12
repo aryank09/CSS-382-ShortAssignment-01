@@ -1,0 +1,156 @@
+================================================================================
+AI interaction log — log-20260410-5.txt
+Date: 2026-04-10 (fifth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+then lets add more rules, if 1 dot makes more sense then lets say 2 - so "--" represent a space as wel; otherwise we can try if 2 ".." represents a space lets make 1 "-" a space and try this combination;
+
+so either . and -- is space after a word
+or .. and - is space after a word
+
+Delimiter rules implemented
+---------------------------
+Assume each **word** is standard ITU Morse (A–Z letters concatenated, no internal
+“space” symbols).
+
+After a word (when more symbols remain), a **word space** is **one** of:
+
+**Scheme A**
+- a single dot **`.`**, OR
+- two dashes **`--`** (treated as a delimiter, *not* as the letter **M**).
+
+**Scheme B**
+- two dots **`..`**, OR
+- a single dash **`-`** (treated as a delimiter, *not* as the letter **T**).
+
+The decoder tries **both** delimiter options at each boundary when they match the
+next symbols, and picks the **maximum sum of** `wordfreq.zipf_frequency(w, 'en')`
+over words (same Viterbi-style backward DP as in log-20260410-4).
+
+Overlap with real Morse (important caveat)
+------------------------------------------
+In ordinary Morse, **`-`** is **T** and **`--`** is **M**. Treating them as
+**spaces** means the same glyph can be “meta” or “letter” depending on
+position—this is **intentionally ambiguous** unless the assignment fixes extra
+rules.
+
+Alignment after **THE** (`-.....`, indices 0–5)
+-----------------------------------------------
+File at index 6 onward begins with **`..`** (not **`--`**, not **`-`**).
+
+- **Scheme A** after **THE**: only **``.`** matches at 6 (since `s[6:8] != '--'`).
+  Next word starts at index **7**. The substring there begins **`.--.--..-…`**, which
+  does **not** match **IMPRESSION** (which must start with **`..--.--..-`**).
+
+- **Scheme B** after **THE**: **`..`** matches at 6–7. Next word starts at index **8**,
+  where the string begins **`--.--..-…`**, i.e. letter **M** (`--`), **not** **I**
+  (`..`). So **IMPRESSION** does **not** follow **THE** under scheme **B** on this
+  file either.
+
+So: with **THE** fixed as the first word, **neither** A nor B reproduces the
+earlier “**THE IMPRESSION …**” alignment from the **no-delimiter** model.
+
+Search results (automated)
+--------------------------
+- With `/usr/share/dict/words`, **zipf**-best paths under A and B exist but read
+  like many short words (**BE**, **I**, **AT**, …) unless filters are tightened.
+- With **strict** filters (e.g. length ≥ 5 and zipf ≥ 3 for non-**THE** words), **no**
+  full parse of the entire string was found for **A** or **B** on this file—likely
+  the ciphertext needs shorter/rarer words or different delimiter rules.
+
+Full Python (Viterbi + schemes A/B)
+-----------------------------------
+Requires: `pip install wordfreq`, macOS `/usr/share/dict/words`, `morse_code.txt`
+in the working directory.
+
+```python
+from wordfreq import zipf_frequency
+
+MORSE_LETTER = {
+    "A": ".-", "B": "-...", "C": "-.-.", "D": "-..", "E": ".", "F": "..-.",
+    "G": "--.", "H": "....", "I": "..", "J": ".---", "K": "-.-", "L": ".-..",
+    "M": "--", "N": "-.", "O": "---", "P": ".--.", "Q": "--.-", "R": ".-.",
+    "S": "...", "T": "-", "U": "..-", "V": "...-", "W": ".--", "X": "-..-",
+    "Y": "-.--", "Z": "--..",
+}
+
+def enc(w):
+    return "".join(MORSE_LETTER[c] for c in w)
+
+def load_words(path="/usr/share/dict/words"):
+    words_by_morse = {}
+    with open(path) as f:
+        for line in f:
+            w = line.strip().upper()
+            if not w.isalpha() or len(w) > 25:
+                continue
+            words_by_morse.setdefault(enc(w), []).append(w)
+    return words_by_morse
+
+def next_delims_A(j, s, n):
+    """After word ends at j: `.` OR `--`"""
+    out = []
+    if j >= n:
+        return out
+    if s[j] == ".":
+        out.append(j + 1)
+    if j + 2 <= n and s[j : j + 2] == "--":
+        out.append(j + 2)
+    return out
+
+def next_delims_B(j, s, n):
+    """After word ends at j: `..` OR `-`"""
+    out = []
+    if j >= n:
+        return out
+    if j + 2 <= n and s[j : j + 2] == "..":
+        out.append(j + 2)
+    if s[j] == "-":
+        out.append(j + 1)
+    return out
+
+def viterbi(s, words_by_morse, next_delims, ok_word=lambda w: True):
+    n = len(s)
+    NEG = -1e300
+    best = [(NEG, None)] * (n + 1)
+    best[n] = (0.0, None)
+    for i in range(n - 1, -1, -1):
+        best_sc, bp = NEG, None
+        for j in range(i + 1, min(i + 100, n + 1)):
+            chunk = s[i:j]
+            if chunk not in words_by_morse:
+                continue
+            for w in words_by_morse[chunk]:
+                if not ok_word(w):
+                    continue
+                z = zipf_frequency(w.lower(), "en")
+                if j == n:
+                    tot = z + best[n][0]
+                    if tot > best_sc:
+                        best_sc, bp = tot, (j, w, n)
+                else:
+                    for nxt in next_delims(j, s, n):
+                        if best[nxt][0] > NEG + 1:
+                            tot = z + best[nxt][0]
+                            if tot > best_sc:
+                                best_sc, bp = tot, (j, w, nxt)
+        best[i] = (best_sc, bp)
+    if best[0][0] <= NEG + 1:
+        return None
+    words, i = [], 0
+    while i < n:
+        j, w, nxt = best[i][1]
+        words.append(w)
+        i = nxt
+    return words, best[0][0]
+
+if __name__ == "__main__":
+    s = open("morse_code.txt").read().strip()
+    wb = load_words()
+    print("A", viterbi(s, wb, next_delims_A))
+    print("B", viterbi(s, wb, next_delims_B))
+```
+
+================================================================================

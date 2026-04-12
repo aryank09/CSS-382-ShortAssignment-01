@@ -1,0 +1,43 @@
+================================================================================
+AI interaction log — log-20260410-22.txt
+Date: 2026-04-10 (twenty-second interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+try to run the relavent program to try to figure out the morse code
+
+Programs run (cwd: Decoding Morse Code)
+---------------------------------------
+1) python3 morse_explore.py --mode remainder
+   → THE + IT TWEE BE IS AT ME ... (dictionary-valid; high unigram Zipf; not meaningful)
+
+2) python3 morse_explore.py --mode remainder --min-len 4 --no-short-ok
+   → THE + IMPEDE SHOT SEES TEAR TOTE TEST TWAT KENT TATE SATE TIES DENT SWAT
+   (re-encode match True)
+
+3) python3 morse_explore.py --mode delims-b --min-len 4
+   → Scheme B (space = .. OR -): BE WE TEEN IS ON ... (not THE-first)
+
+4) python3 morse_explore.py --mode full --min-len 4 --no-short-ok
+   → BEST TWEE TEES ... (full string tiles; does not start with THE)
+
+5) python3 freq_beam_decode.py --reference-sentence "IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY"
+   -> local ~72.96, full-line Zipf ~4.11 (valid remainder tiling)
+
+6) python3 freq_beam_decode.py --min-len 4 --no-short-ok --allow-extra IS,FAR --ban IT --topk 200 --sort full --show 12
+   → Top lines used UNMEET... (low full-line Zipf)
+
+7) python3 freq_beam_decode.py --min-len 4 --no-short-ok --allow-extra IS,FAR --ban IT,UNMEET --topk 300 --sort full --show 15
+   -> Top: THE IMPRESSION IS FAR TOTE DEAN MATTE TENT KNEE EACH REALITY (full-line Zipf ~2.97)
+   → Several THE IMPRESSION IS FAR ... variants; IMPEDE variants also appear lower
+
+Interpretation
+--------------
+- Raw Zipf Viterbi (remainder) optimizes word frequency, not sentence quality.
+- One exact dictionary tiling that reads like a coherent (if imperfect) line:
+  THE IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY — verify tokens in dictionary.txt
+  and meaning vs instructor intent (THAN vs BEACH Morse mismatch noted in prior logs).
+- freq_beam_decode with bans/allow-extra is exploratory; ranking still needs human sense check.
+
+================================================================================

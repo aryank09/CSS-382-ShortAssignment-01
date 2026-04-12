@@ -1,0 +1,65 @@
+================================================================================
+AI interaction log — log-20260410-6.txt
+Date: 2026-04-10 (sixth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+dont get stuck with impresson, the only assumption we can be sure of is that the first word is the and we need then see what it is;
+
+Approach
+--------
+- Fix **THE** = standard Morse **`-.....`** (6 symbols); verified against
+  `morse_code.txt`.
+- Treat everything after that as **remainder** `rest = s[6:]`, length **100**.
+- Do **not** assume the second word is **IMPRESSION** or any particular quote.
+
+Facts about the remainder
+-------------------------
+- `rest` begins with **`..--.--..-..........----........-..-.-.-`** (prefix shown in
+  session output).
+- Under **concatenated** ITU Morse (no explicit word separators), **many**
+  different sequences of dictionary words can tile the same `rest` exactly. Two
+  **exact** tilings found in this session:
+  1. **IMPRESSION** + **IS** + **FAR** + **MORE** + **IMPORTANT** + **BEACH** +
+     **REALITY** (re-encodes to `rest`; noted earlier as awkward English).
+  2. With the constraint “every word on `rest` has length ≥ 5,” a **zipf-max**
+     tiling: **IMPEDE** + **SHONE** + **SEINE** + **COMET** + **SATAN** +
+     **ORTET** + **TWIST** + **TENSE** + **REALITY** — also an **exact** match to
+     `rest`, but not a plausible sentence.
+
+So: **THE** is the only solid anchor; **what follows is underdetermined** by
+“`/usr/share/dict/words` + simple scoring” alone. Choosing a reading needs extra
+constraints (assignment rules, grammar, human judgment).
+
+Second-word **prefix** options (illustrative, not exclusive)
+------------------------------------------------------------
+Among dictionary words whose Morse is a **prefix** of `rest` and **length ≥ 5**,
+high `zipf_frequency` examples included **IMPRESSION**, **IMPRESS**, **IMPEDE**,
+**IMPASSE**, etc. Many other tilings use shorter second words (**I**, **E**, …)
+if those are allowed.
+
+Code (Python 3) — remainder extraction + optional Viterbi on `rest`
+-------------------------------------------------------------------
+```python
+MORSE_LETTER = {
+    "A": ".-", "B": "-...", "C": "-.-.", "D": "-..", "E": ".", "F": "..-.",
+    "G": "--.", "H": "....", "I": "..", "J": ".---", "K": "-.-", "L": ".-..",
+    "M": "--", "N": "-.", "O": "---", "P": ".--.", "Q": "--.-", "R": ".-.",
+    "S": "...", "T": "-", "U": "..-", "V": "...-", "W": ".--", "X": "-..-",
+    "Y": "-.--", "Z": "--..",
+}
+
+def enc(w):
+    return "".join(MORSE_LETTER[c] for c in w)
+
+s = open("morse_code.txt").read().strip()
+assert s.startswith(enc("THE"))
+rest = s[len(enc("THE")) :]
+
+# Build words_by_morse from /usr/share/dict/words, then backward DP maximizing
+# sum of wordfreq.zipf_frequency(w, 'en') over words tiling `rest`, optionally
+# with ok_word(w) e.g. len(w) >= 5.
+```
+
+================================================================================

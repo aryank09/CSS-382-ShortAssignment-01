@@ -1,0 +1,43 @@
+================================================================================
+AI interaction log — log-20260410-12.txt
+Date: 2026-04-10 (twelfth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+no what i am saying is try to figure out what the morse code can be, to ensure that after decoding the word you though was correct double check if that exists in @dictionary.txt
+
+Rule update
+-----------
+`.cursor/rules/morse-decoding-project.mdc` — new **Verification workflow (required)**:
+1) hypothesize decoding; 2) **each** token checked against **`dictionary.txt`**; 3) any
+missing token ⇒ invalid; 4) then meaningful-sentence check.
+
+Demonstration (one-off Python, not morse_explore.py)
+-----------------------------------------------------
+- Built `word_set` from **`dictionary.txt`** (uppercase alpha lines only).
+- Built Morse index **only** from those words.
+- Fixed **THE** as first word; Viterbi on remainder with **`dictionary.txt`** only.
+- Printed **per-token** `in dictionary.txt: YES/NO` for two heuristic tilings.
+
+Results (session output)
+------------------------
+- Zipf + min length 4 (or SHORT_OK): all tokens **YES**, re-encode **True** (example
+  line with IT, TWEE, DEEM, TENT, …).
+- Zipf + all words length ≥ 5: all tokens **YES**, re-encode **True** (example line
+  IMPEDE, SHONE, SEINE, TROTTED, UNMET, MENTA, TWIST, TENSE, REALITY).
+
+Manual double-check example (shell)
+-----------------------------------
+From project directory, exact line match:
+  grep -x 'THE' dictionary.txt
+  grep -x 'REALITY' dictionary.txt
+(File is uppercase; use the same spelling as in the file.)
+
+Takeaway
+--------
+Many tilings can satisfy Morse + **dictionary.txt**; **every** candidate word must be
+checked in the file. Passing the file check does **not** imply a good sentence—that
+is the separate meaning step in the rule.
+
+================================================================================

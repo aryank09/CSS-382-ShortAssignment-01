@@ -1,0 +1,139 @@
+================================================================================
+AI interaction log — log-20260410-4.txt
+Date: 2026-04-10 (fourth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+try not between letters but words so THE = -..... then 1 or 2 dots may represent a space
+
+Model tested
+------------
+- Each **word** is standard ITU Morse A–Z with **no** extra dots between letters
+  (letters concatenated), e.g. **THE** → `-` + `....` + `.` = **`-.....`** (6 symbols).
+- Between **words**, a **space** is exactly **one dot** `.` **or** two dots `..`
+  (delimiter only; not part of a letter’s code).
+- After a word, if more symbols remain, the next symbol must begin a delimiter
+  (starts with `.`), then the following Morse word starts.
+
+Alignment check (THE + IMPRESSION hypothesis)
+---------------------------------------------
+Under the **no-delimiter** model used earlier, the substring after **THE** begins
+at index 6 with **`..`** — the start of **IMPRESSION** (letter **I** = `..`).
+
+If a **space** is inserted after **THE**:
+- **1-dot space:** index 6 is the space; the next word starts at index 7. The
+  file at 7 is **`.`** alone before `--…`, so the next word’s Morse starts with a
+  **single** dit, not **`..`**. So the next word **cannot** be **IMPRESSION**
+  (which must start with `..`).
+- **2-dot space:** indices 6–7 are **`..`** as space; the next word starts at
+  index 8. The file at 8–9 is **`--`**, i.e. letter **M**, not **I** (`..`). So
+  the next word **cannot** begin **IMPRESSION**.
+
+Conclusion: **THE** as **`-.....`** + **1 or 2 dot word breaks** is **incompatible**
+with the same ciphertext also encoding **IMPRESSION** immediately after **THE**
+in the way the concatenated model did. Either the spacing rule is different, or
+the “impression” quote is not what this file encodes under this spacing rule.
+
+Code (Python 3) — delimiter DP + zipf best path
+-------------------------------------------------
+Used in this session to parse with `.` / `..` delimiters and rank by
+`wordfreq.zipf_frequency` (see script below).
+
+```python
+from wordfreq import zipf_frequency
+
+MORSE_LETTER = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+    'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+    'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+    'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..',
+}
+
+def enc(w):
+    return ''.join(MORSE_LETTER[c] for c in w)
+
+# Load words_by_morse from /usr/share/dict/words (alpha only, length cap).
+
+# Backward DP: best[i] = max total zipf from i to end.
+# From i, try j>i with s[i:j] in words_by_morse; then j==n, or s[j]=='.' and
+# recurse from j+1 or (if s[j:j+2]=='..') from j+2.
+
+# Reconstruct by following backpointers from 0.
+```
+
+Full runnable script (requires: `pip install wordfreq`, macOS `/usr/share/dict/words`):
+
+```python
+from wordfreq import zipf_frequency
+
+MORSE_LETTER = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+    'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+    'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+    'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..',
+}
+
+def enc(w):
+    return ''.join(MORSE_LETTER[c] for c in w)
+
+def load_words(path="/usr/share/dict/words"):
+    words_by_morse = {}
+    with open(path) as f:
+        for line in f:
+            w = line.strip().upper()
+            if not w.isalpha() or len(w) > 25:
+                continue
+            words_by_morse.setdefault(enc(w), []).append(w)
+    return words_by_morse
+
+def best_zipf_path(s, words_by_morse):
+    n = len(s)
+    best = [(-1e300, None)] * (n + 1)
+    best[n] = (0.0, None)
+    for i in range(n - 1, -1, -1):
+        best_sc, bp = -1e300, None
+        for j in range(i + 1, min(i + 100, n + 1)):
+            chunk = s[i:j]
+            if chunk not in words_by_morse:
+                continue
+            for w in words_by_morse[chunk]:
+                z = zipf_frequency(w.lower(), "en")
+                if j == n:
+                    tot = z + best[n][0]
+                    if tot > best_sc:
+                        best_sc, bp = tot, (j, w, 0)
+                    continue
+                if s[j] != ".":
+                    continue
+                if best[j + 1][0] > -1e200:
+                    tot = z + best[j + 1][0]
+                    if tot > best_sc:
+                        best_sc, bp = tot, (j, w, 1)
+                if j + 2 <= n and s[j : j + 2] == ".." and best[j + 2][0] > -1e200:
+                    tot = z + best[j + 2][0]
+                    if tot > best_sc:
+                        best_sc, bp = tot, (j, w, 2)
+        best[i] = (best_sc, bp)
+    words = []
+    i = 0
+    while i < n:
+        j, w, d = best[i][1]
+        words.append(w)
+        i = j + d
+    return words, best[0][0]
+
+if __name__ == "__main__":
+    s = open("morse_code.txt").read().strip()
+    wb = load_words()
+    out, score = best_zipf_path(s, wb)
+    print(" ".join(out))
+    print("score", score)
+```
+
+Note: Without strong constraints (min length, closed word list), zipf-only paths
+are noisy because **T**, **E**, **I**, etc. match short Morse chunks.
+
+================================================================================

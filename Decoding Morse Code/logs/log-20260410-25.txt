@@ -1,0 +1,28 @@
+================================================================================
+AI interaction log — log-20260410-25.txt
+Date: 2026-04-10 (twenty-fifth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+is there any other possibilty for the BEACH specifically
+
+Answer (verified against dictionary.txt + ITU letter Morse)
+-----------------------------------------------------------
+For the **same contiguous Morse substring** that one full tiling labels as the
+single word BEACH, a grep of dictionary.txt for words whose concatenated letter
+Morse equals enc(BEACH) yields **exactly five** tokens (all the same 15-symbol
+pattern):
+
+  BEACH, BITCH, BUNDS, BUTENES, DEUCES
+
+Reason: with letters run together, different spellings can collapse to the same
+dit/dah string (e.g. E(.)+A(.-) concatenates the same as I(..)+T(-)).
+
+THAN is **not** interchangeable with BEACH: different Morse length/pattern for
+that slot in the proverb-style reading.
+
+Code used (conceptual): enc(w) = join ITU Morse per letter; compare to
+enc("BEACH"); scan dictionary.txt.
+
+================================================================================

@@ -1,0 +1,48 @@
+================================================================================
+AI interaction log — log-20260410-24.txt
+Date: 2026-04-10 (twenty-fourth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+you had mentioned something to do with the most commmonly occuring words feel free
+to check @logs ; lets try to try that method
+
+Context from logs
+-----------------
+- `log-20260410-21.txt`, `log-20260410-7.txt`, `log-20260410-5.txt`: scoring uses
+  `wordfreq.zipf_frequency(w, "en")` (log10-style Zipf scale of how common a word
+  is in English text). Sum over words in a tiling = "prefer common words."
+- Caveat already logged: raw unigram Zipf favors very common short tokens (IT, AT)
+  unless combined with min length, bans, or full-line rescoring.
+
+Code change
+-----------
+- `morse_explore.py`: new optional flag `--min-zipf Z`
+  - Only words with `zipf_frequency(w.lower(), "en") >= Z` are allowed (after the
+    existing `--min-len` / SHORT_OK rules).
+  - Typical Zipf: ~7 THE/AND class; ~4–5 common content words; ~3 rarer.
+  - `IMPRESSION` ~4.35; `IMPEDE` ~3.14; `TWAT` ~3.29 — so a floor near 4.0
+    drops IMPEDE-style tiles but does not by itself pick the proverb.
+
+Experiments run
+---------------
+cd "/Users/aryankhanna/Documents/GitHub/CSS-382-AI/Decoding Morse Code"
+
+Sweep `--mode remainder --min-len 4` with `--min-zipf` unset, 3.0, 3.5, 4.0, 4.2, 4.35, 4.5:
+- Up through 4.35: Viterbi still returns high-unigram junk (e.g. IT YEAH ...).
+- 4.5: **no** remainder tiling (over-constrained; also excludes IMPRESSION at 4.35).
+
+`--min-len 5 --no-short-ok --min-zipf 4.0`: no tiling (FAR/IS etc. blocked by length).
+
+`--min-len 3 --min-zipf 4.0`: tiling exists but still not the proverb line.
+
+Conclusion
+----------
+- "Most common words" via **Zipf floor** is implemented and reproducible with
+  `--min-zipf`.
+- Alone it does not isolate THE IMPRESSION IS FAR MORE ... ; combine with
+  `freq_beam_decode.py` full-line score, manual bans, or meaning check as in
+  prior logs.
+
+================================================================================

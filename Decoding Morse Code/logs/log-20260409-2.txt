@@ -1,0 +1,15 @@
+================================================================================
+AI interaction log — log-20260409-2.txt
+Date: 2026-04-09 (second interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+add in the rules that morse code is present in @morse_code.txt
+
+Action taken
+------------
+- Updated `.cursor/rules/morse-decoding-project.mdc` to state that the Morse
+  ciphertext to decode is in `morse_code.txt` at the project root.
+
+================================================================================

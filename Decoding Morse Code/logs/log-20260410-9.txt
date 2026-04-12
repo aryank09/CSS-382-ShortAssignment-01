@@ -1,0 +1,41 @@
+================================================================================
+AI interaction log — log-20260410-9.txt
+Date: 2026-04-10 (ninth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+let's think of this in a new way
+
+what's garunteed / can belive is true:
+- The sentence starts with THE
+- It has to be a meaningful sentence
+- I have added a @dictionary.txt  that contains all possible words; add it to the rules that words need to be checked from this @dictionary.txt and then confirmed that if its making a meaningful sentence
+
+Changes made
+------------
+1. `.cursor/rules/morse-decoding-project.mdc`
+   - Section **What we treat as reliable:** THE first; meaningful English sentence.
+   - Section **Word list (authoritative):** only **`dictionary.txt`** at project root
+     for token validation; no other word list unless the author changes it.
+   - After dictionary check, **confirm** the candidate reads as a **meaningful
+     sentence**; reject dictionary-valid but nonsensical strings.
+   - Note that frequency/heuristic scoring is secondary to dictionary + meaning.
+
+2. `morse_explore.py`
+   - Default **`--dict`** is now **`dictionary.txt`** beside the script (not
+     `/usr/share/dict/words`).
+   - Docstring updated; after `remainder` / `full` decode, prints a reminder to
+     verify a meaningful sentence.
+
+Sample run (default dict)
+-------------------------
+`python3 morse_explore.py --mode remainder --min-len 4` with `dictionary.txt`
+produced a different tiling than `/usr/share/dict/words` (expected). Example end
+of output:
+  THE + IT TWEE BE IS AT ME IS IT IN NO ME DEEM AT AT TENT AT AT IS ME BE IN IT AS AT AT
+  Re-encode rest matches: True
+Still not a plausible sentence — illustrates need for the “meaningful sentence”
+gate beyond dictionary membership.
+
+================================================================================

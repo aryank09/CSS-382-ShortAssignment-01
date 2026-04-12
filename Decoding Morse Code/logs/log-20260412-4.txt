@@ -1,0 +1,36 @@
+================================================================================
+AI interaction log — log-20260412-4.txt
+Date: 2026-04-12 (fourth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+can beach be instead "than the"
+
+Answer
+------
+Yes, as **Morse with no spaces between letters**, the 15-symbol string that
+encodes **BEACH** is **identical** to **THAN** concatenated with **THE**:
+
+  enc(BEACH)   = -.....--.-.....  (15)
+  enc(THAN)    = -.....--.       (9)
+  enc(THE)     = -.....          (6)
+  enc(THAN+THE)= -.....--.-.....  (15)  == enc(BEACH)
+
+So the same ciphertext segment can be segmented as one word **BEACH** or as
+two words **THAN** **THE** (both THAN and THE are in dictionary.txt).
+
+Full line becomes: **THE IMPRESSION IS FAR MORE IMPORTANT THAN THE REALITY**
+(same Morse as the BEACH reading; one fewer “word” in the BEACH tiling is
+replaced by two tokens THAN + THE).
+
+Code
+----
+```python
+MORSE = { ... }
+def enc(w):
+    return ''.join(MORSE[c] for c in w.upper())
+assert enc("BEACH") == enc("THAN") + enc("THE")
+```
+
+================================================================================

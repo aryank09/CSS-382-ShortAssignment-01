@@ -1,0 +1,31 @@
+================================================================================
+AI interaction log — log-20260410-8.txt
+Date: 2026-04-10 (eighth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+run it
+
+Command (from project directory)
+--------------------------------
+python3 morse_explore.py --mode remainder --min-len 4
+python3 morse_explore.py --mode remainder --min-len 5 --no-short-ok
+python3 morse_explore.py --mode delims-a --min-len 4
+python3 morse_explore.py --mode delims-b --min-len 4
+
+Output summary
+--------------
+- remainder --min-len 4: THE + (many short words); zipf ~280.07; re-encode True
+- remainder --min-len 5 --no-short-ok: THE + IMPEDE SHONE SEINE COMET SATAN ORTET
+  TWIST TENSE REALITY; zipf ~30.17; re-encode True
+- delims-a: BE I AT A … (zipf ~188.01)
+- delims-b: BE A A I … (zipf ~179.39)
+
+Full stdout captured in the agent session (see terminal transcript).
+
+Code
+----
+`morse_explore.py` (unchanged this turn).
+
+================================================================================

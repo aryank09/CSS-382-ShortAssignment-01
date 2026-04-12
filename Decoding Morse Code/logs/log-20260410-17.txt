@@ -1,0 +1,38 @@
+================================================================================
+AI interaction log — log-20260410-17.txt
+Date: 2026-04-10 (seventeenth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+then let's try .. or -
+
+Model
+-----
+Between **consecutive words**, insert **either** a two-dot gap **`..`** **or** a
+one-dash gap **`-`** (each gap is **not** part of ITU letter Morse). Words from
+**dictionary.txt** only; remainder is the 100 symbols after Morse(**THE**).
+
+Results (zipf-best Viterbi on remainder)
+----------------------------------------
+| Min word len | Re-encode = remainder | Best line (THE + …) | Gaps (between words) |
+| min 3 | FAIL (bad backtrace / tie) | noisy short words | (omit) |
+| min 4 | YES | IMPEDE SEEM TIES TINY METE WANT KENT WEES TREE RITE SWAT | .. - .. - .. - - - .. - |
+| min 5 | YES | IMPASSE AMNESIA COMET IMPORTANT HANTS REALITY | .. .. .. - .. |
+| min 6 | **no** tiling | — | — |
+
+Full-string decode (same flex gaps, min len 5, **no** THE lock) did **not**
+re-encode the 106 symbols in the test run (starts with DISME…).
+
+Dictionary: all tokens above checked against **dictionary.txt** for the min 4 / 5
+lines.
+
+Meaning (opinion)
+-----------------
+- **Min 4:** word salad / technical fragments — weak as a sentence.
+- **Min 5:** reads like a pile of heavy nouns (*IMPASSE*, *AMNESIA*, *COMET*, …);
+  **HANTS** is obscure. Better than random letters, still not a crisp proverb.
+
+Code: one-off Python in session (not `morse_explore.py`).
+
+================================================================================

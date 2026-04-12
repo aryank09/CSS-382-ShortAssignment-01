@@ -1,0 +1,55 @@
+================================================================================
+AI interaction log — log-20260410-7.txt
+Date: 2026-04-10 (seventh interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+then lets do that
+
+Action
+------
+Implemented the “try hypotheses systematically” workflow as a runnable script in
+the project (not only narrative in logs).
+
+Script
+------
+`morse_explore.py` (project root next to `morse_code.txt`)
+
+Dependencies: `pip install wordfreq`  
+Dictionary default: `/usr/share/dict/words`
+
+Behavior
+--------
+- Verifies the file starts with standard Morse for **THE** (`-.....`).
+- Prints the **remainder** (100 symbols) in full.
+- **Modes**
+  - `remainder` — Viterbi on the remainder only; output shown as **THE + …**
+  - `full` — Viterbi on the entire ciphertext (no fixed THE).
+  - `delims-a` — word spaces: `.` or `--` between words (full string).
+  - `delims-b` — word spaces: `..` or `-` between words (full string).
+- **Filters** (concat modes): `--min-len N` (default 4), optional `--no-short-ok`
+  to disallow the built-in short-word whitelist.
+
+Example commands (run from this project directory)
+---------------------------------------------------
+```bash
+pip install wordfreq
+
+python3 morse_explore.py --mode remainder --min-len 4
+python3 morse_explore.py --mode remainder --min-len 5 --no-short-ok
+python3 morse_explore.py --mode full --min-len 4
+python3 morse_explore.py --mode delims-a --min-len 4
+python3 morse_explore.py --mode delims-b --min-len 4
+```
+
+Notes
+-----
+- Scoring is **sum of** `wordfreq.zipf_frequency(w, 'en')`; it is a heuristic, not
+  ground truth.
+- Several different tilings can match the same dots/dashes; tightening
+  `--min-len` changes which tiling wins.
+- Delimiter schemes overlap ordinary Morse symbols (**T**, **M**, etc.); treat
+  outputs as hypothesis tests, not certainties.
+
+================================================================================

@@ -1,0 +1,128 @@
+================================================================================
+AI interaction log — log-20260410-3.txt
+Date: 2026-04-10 (third interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+add this to the rules that whatever kind of code you use; you wil add those to logs as well
+also add the previous codes you used to decode the morse code
+
+but let me tell you this sentence that you have decoded is defintly wrong 
+
+let's try to explore the possibilty of dots being used to represent spaces in the sentece between letters
+
+the first word for sure seems to be THE
+
+Rule change (applied)
+---------------------
+Updated `.cursor/rules/morse-decoding-project.mdc` so that any **code** written or
+run for decoding/analysis must be **included in the interaction log** (full text
+or path to a saved script in-repo) for reproducibility.
+
+Author position on prior decode
+-------------------------------
+The earlier plaintext (“THE IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY” from
+concatenated standard Morse words) is **rejected** as the intended message; the
+author states it is “definitely wrong” despite matching the file under the
+no-spaces concatenation model.
+
+Exploration: dots as spaces between letters
+-------------------------------------------
+Hypothesis: some `.` characters are **not** Morse dits but **separators between
+letters** within words, while standard ITU patterns still encode letters.
+
+Concrete check for **THE**: if single-dot separators sit **between** T, H, and E:
+  `-`  `.`  `....`  `.`  `.`
+that is exactly **8** symbols and equals the file prefix `-.......` (first 8
+characters of `morse_code.txt`). So **THE** is a natural reading of the opening
+under this hypothesis, distinct from the 6-symbol run `-.....` (continuous Morse
+for THE with no literal separators).
+
+Parser sketch (same alphabet, A–Z):
+- Read a valid Morse letter pattern from the current position.
+- If the next character is `.`, treat it as an **intra-word** separator and
+  continue in the same English word.
+- If there is no `.` but more symbols remain, end the current English word and
+  continue (next Morse letter starts the next word).
+
+A reachability/count test on the full file shows this grammar **can** parse the
+entire string, but the number of distinct parses is **astronomically large**
+(billions of trillions+), because almost every `.` can be either a dit inside a
+letter or a separator depending on pattern choice. **Extra constraints** are
+needed (e.g. known word list, minimum word length, bigram model, or rules for
+when a dot is a separator vs a dit).
+
+Next steps for the project: narrow the dot-separator model (explicit rules for
+runs of dots, or word-level separators only), or obtain the instructor’s encoding
+assumptions.
+
+================================================================================
+ARCHIVED CODE — earlier “concatenated Morse words” pipeline (sessions log-20260410-1/2)
+================================================================================
+
+These snippets were used to: build letter→Morse; index `/usr/share/dict/words`
+by full-word Morse strings; segment the ciphertext; rank paths with
+`wordfreq.zipf_frequency` / `word_frequency`; verify re-encode against the file;
+compare “THAN REALITY” vs “BEACH REALITY” tail lengths.
+
+--- Python: Morse table and encode a word ---
+
+MORSE_LETTER = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+    'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+    'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+    'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..',
+}
+
+def enc(w):
+    return ''.join(MORSE_LETTER[c] for c in w)
+
+--- Python: dictionary index + backward reachable DP + optional zipf best path ---
+
+words_by_morse = {}
+with open('/usr/share/dict/words') as f:
+    for line in f:
+        w = line.strip().upper()
+        if not w.isalpha() or len(w) > 25:
+            continue
+        m = enc(w)
+        words_by_morse.setdefault(m, []).append(w)
+
+# Backward reachable[i], then reconstruct one path using zipf_frequency(w,'en')
+
+--- Python: prefix match through IMPORTANT; tail BEACH vs THAN ---
+
+# Prefix "THE"+"IMPRESSION"+"IS"+"FAR"+"MORE"+"IMPORTANT" length 74 matches file.
+# enc("THAN")+enc("REALITY") length 26 vs enc("BEACH")+enc("REALITY") length 32;
+# file tail length 32 matches BEACH+REALITY under concatenation model.
+
+================================================================================
+ARCHIVED CODE — dot-as-letter-separator reachability (this session)
+================================================================================
+
+MORSE_TO_LETTER = {v: k for k, v in MORSE_LETTER.items()}
+patterns = sorted(MORSE_TO_LETTER.keys(), key=len, reverse=True)
+
+def can(pos):
+    if pos == n:
+        return True
+    for pat in patterns:
+        L = len(pat)
+        if pos + L > n or s[pos:pos+L] != pat:
+            continue
+        np = pos + L
+        if np < n and s[np] == '.':
+            if can(np + 1):
+                return True
+        elif np == n:
+            return True
+        else:
+            if can(np):
+                return True
+    return False
+
+# can(0) -> True on morse_code.txt; count_ways(0) astronomically large.
+
+================================================================================

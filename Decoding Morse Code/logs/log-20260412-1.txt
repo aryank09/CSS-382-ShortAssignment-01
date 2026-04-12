@@ -1,0 +1,95 @@
+================================================================================
+AI interaction log — log-20260412-1.txt
+Date: 2026-04-12 (first interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+Use word frequencies (not existing repo Python pipelines) for the sentence
+THE IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY: output ~100 highest
+confidence results and pick the most likely candidate.
+
+What we did
+-----------
+1. Verified ITU Morse re-encoding of that exact word split matches morse_code.txt
+   (106 symbols).
+
+2. Loaded dictionary.txt and bucketed words by full-word Morse string. Slots with
+   more than one dictionary word (same encoding):
+   - THE: 6 words (kept THE only — project rule: sentence starts with THE)
+   - IS: 5 (EH, HE, IS, SEE, SI)
+   - MORE: 4 (MOL, MORE, TONNE, TOTED)
+   - BEACH: 5 (BEACH, BITCH, BUNDS, BUTENES, DEUCES)
+   Other words in the target sentence are unique in dictionary for their pattern.
+
+3. With THE fixed: 5 × 4 × 5 = 100 distinct dictionary sentences (exactly one
+   list of 100).
+
+4. Scoring (wordfreq, English):
+   - Primary: zipf_frequency(full_sentence_lower, "en")  [phrase Zipf]
+   - Secondary sort: sum of zipf_frequency(word, "en") per token
+
+5. All 100 rows ranked; top 5 phrase-Zipf tied at ~4.11 for lines using IS + MORE
+   + BEACH/HE/SEE variants; rank 1 by sum-Zipf tie-break: the original proverb-style
+   line with IS, MORE, BEACH.
+
+Code (reproducible)
+-------------------
+```python
+from pathlib import Path
+from itertools import product
+from wordfreq import zipf_frequency
+
+MORSE = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+    'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+    'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+    'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+    'Y': '-.--', 'Z': '--..',
+}
+def enc_word(w):
+    return ''.join(MORSE[c] for c in w.upper())
+
+inv = {}
+for line in Path("dictionary.txt").read_text().splitlines():
+    w = line.strip().upper()
+    if not w or not all(c in MORSE for c in w):
+        continue
+    key = enc_word(w)
+    inv.setdefault(key, []).append(w)
+
+slots = [
+    ["THE"],
+    inv[enc_word("IMPRESSION")],
+    inv[enc_word("IS")],
+    inv[enc_word("FAR")],
+    inv[enc_word("MORE")],
+    inv[enc_word("IMPORTANT")],
+    inv[enc_word("BEACH")],
+    inv[enc_word("REALITY")],
+]
+
+def z(w):
+    return zipf_frequency(w.lower(), "en")
+
+rows = []
+for tup in product(*slots):
+    words = list(tup)
+    s = " ".join(w.lower() for w in words)
+    sum_z = sum(z(w) for w in words)
+    phrase_z = zipf_frequency(s, "en")
+    rows.append((phrase_z, sum_z, words, s))
+
+rows.sort(key=lambda r: (r[0], r[1]), reverse=True)
+# print all 100 with rank, phrase_z, sum_z, s
+```
+
+Conclusion
+----------
+- By phrase Zipf + sum Zipf, **the impression is far more important beach reality**
+  is #1 among the 100 Morse-equivalent dictionary lines (THE fixed).
+- Ranks 2–3 swap IS → he / see (same Morse); phrase Zipf matches ~4.11 but grammar
+  is wrong for the intended quote — frequency alone does not enforce syntax.
+- BUTENES rows bottom out (phrase Zipf 0.00 in wordfreq for the full string).
+
+================================================================================

@@ -1,0 +1,56 @@
+================================================================================
+AI interaction log — log-20260410-15.txt
+Date: 2026-04-10 (fifteenth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+then let's try something else if it doesn't make sense then that not the pattern, so we can rule this pattern out and try to find another pattern
+
+Ruled out (as *the* intended solution)
+--------------------------------------
+- **Reading:** THE IMPRESSION IS FAR MORE IMPORTANT BEACH REALITY  
+- **Mechanism:** standard ITU Morse, letters concatenated **within** words, **no**
+  extra space symbols; words from **dictionary.txt**.  
+- **Reason to drop as final answer:** **BEACH** makes the sentence fail as normal
+  English (proverb expects **than**); treat this tiling as **not** the intended
+  message even though it **exactly** re-encodes the ciphertext.
+
+Note: This does **not** prove “concatenated Morse is wrong” in general—only that
+**this** high-literal-coherence tiling is rejected on **meaning**.
+
+Other patterns tried (same ciphertext, **dictionary.txt**, **THE** fixed as first
+word on remainder where applicable)
+--------------------------------------------------------------------------------
+1. **Concatenated Morse, other word splits**  
+   Zipf-ranked alternatives under min-length heuristics tend to be **word salad**
+   (many short tokens). No obviously better **sentence** emerged from that
+   ranking alone.
+
+2. **Exactly one `.` between words** (dot is **not** a letter; it separates words)  
+   Best zipf tiling with words length ≥ 5 on the remainder:  
+   **THE IMPLIES AMNESIA ARMOR IMPORT MATES METES REALITY**  
+   Re-encode check: `enc(w1)+'.'+enc(w2)+...+enc(w7)` equals the 100-symbol
+   remainder. Words verified in **dictionary.txt**.  
+   **English:** still odd (stacked abstractions / uncommon collocation), not a
+   clear win over the ruled-out line on **readability**.
+
+3. **Between words: `.` OR `--` (flex)**  
+   Best zipf with words length ≥ 5:  
+   **THE UNMEET SHEET BESET ARMOR IMPORT MATES METES REALITY**  
+   Re-encode with recorded delimiters matches remainder. Dictionary OK.  
+   **English:** **UNMEET** / overall line still weak as prose.
+
+Conclusion
+----------
+- The “BEACH proverb” tiling is **ruled out** as the **intended** decode on
+  **sense**, not on Morse correctness.
+- **Alternative formal patterns** (dot word breaks, flex `.`/`--` breaks) yield
+  **different** dictionary-valid strings that **still** do not read like a crisp,
+  memorable sentence.
+- Further progress likely needs **more pattern families** (e.g. prosigns,
+  numerals, a different alphabet) or **course-specific** rules—not deducible as a
+  single clear winner from ciphertext + **dictionary.txt** + ordinary English
+  sense alone.
+
+================================================================================

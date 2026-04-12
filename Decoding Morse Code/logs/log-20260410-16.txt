@@ -1,0 +1,48 @@
+================================================================================
+AI interaction log — log-20260410-16.txt
+Date: 2026-04-10 (sixteenth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+since that also doesnt make sense too, lets rule that out too and try some other possibility
+
+Additional rulings (meaning / failure)
+--------------------------------------
+- **Ruled out:** one **`.`** between words → *THE IMPLIES AMNESIA ARMOR IMPORT MATES
+  METES REALITY* (already weak prose).
+- **Ruled out:** **`.`** or **`--`** between words → *THE UNMEET SHEET BESET ARMOR
+  IMPORT MATES METES REALITY*.
+
+New hypotheses tested (remainder after **THE**, **dictionary.txt**, ITU A–Z)
+----------------------------------------------------------------------------
+**Fixed delimiters between every word pair** (words length ≥ 5): **no** full
+tiling for:
+- exactly **`-`**
+- exactly **`...`**
+- exactly **`.-`**
+- exactly **`-.`**
+- exactly **`....`**
+
+**Fixed `-` between words**, **any** word length: a tiling **exists** and matches
+the remainder, but the line is **fragmented / nonsensical** as a sentence
+(example ends with many short tokens: *… TREES EF SET AT*). **Ruled out** on
+meaning.
+
+**Dot–dash swap** (`.`↔`-` on whole ciphertext), then concat decode with words
+≥5: string **no longer** starts with Morse(**THE**); best tiling is **gibberish**
+(*WOMERA TATTOO …*). **Not** a credible pattern for “starts with THE.”
+
+**Reversed** ciphertext: does **not** start with Morse(**THE**).
+
+**Concat, no extra delimiters**, remainder only, **min word length 6** (zipf-best):
+*THE IMPLIES IODISED TROTTED IMPORTANT DEUCES REALITY* — still **odd** (*IODISED*,
+*DEUCES*). **Min length 7:** *… BUTENES REALITY* — same class.
+
+Status
+------
+Many **simple** spacing alphabets are either **impossible** on this file or
+produce **no** satisfying English. Still no replacement pattern that clearly
+beats “reject on meaning” without new assumptions (course spec, extra layers).
+
+================================================================================

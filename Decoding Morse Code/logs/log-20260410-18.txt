@@ -1,0 +1,46 @@
+================================================================================
+AI interaction log — log-20260410-18.txt
+Date: 2026-04-10 (eighteenth interaction this day)
+================================================================================
+
+Author message (verbatim)
+-------------------------
+wait wouldn't this pattern be the quick as the first phrase?
+
+Clarification (correct application of `..` OR `-` between words)
+-----------------------------------------------------------------
+If **every** word boundary uses **`..` or `-`**, then the **first** boundary is
+**immediately after THE**, not after the start of the “remainder” at index 6 as
+raw Morse letters.
+
+Facts on `morse_code.txt`:
+- **THE** = indices **0:6** (standard Morse, 6 symbols).
+- At index **6** the next symbol is **`.`**, not **`-`**, so the only valid
+  first gap from the set {`..`, `-`} is **`..`** occupying indices **6:8**.
+- The **second word** therefore begins at index **8**, with substring starting
+  **`--.--..-...`** — i.e. Morse for **`--`** = **M** first, **not** **`..`** =
+  **I** first.
+
+Consequence
+-----------
+Any decode that treated **`s[6:]`** as the Morse of the next **word** (so the
+first letters were **`..`** = **I**, e.g. **IMPRESSION**, **IMPASSE**, …)
+**skipped** the mandatory **first gap** and is **inconsistent** with the rule
+“`..` or `-` between **all** words.”
+
+Model fix in code
+-----------------
+- Gaps are **not** allowed to consume the **final** symbol as a dangling
+  delimiter with no following word.
+- Viterbi re-run on **body = s[8:]** with gaps between inner words only.
+
+Example result (dictionary.txt, min word length 5, zipf-best)
+---------------------------------------------------------------
+**THE .. MATER SHONE EVERY METES YAMEN WANES CHAIR SATEM**  
+(with gaps `..` `..` `-` `-` `-` `-` `-` between successive body words; full
+106-symbol string matches the file).
+
+This is still weak English; the point of this log is **structural** correction,
+not a final polished plaintext.
+
+================================================================================
