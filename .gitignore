@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Microsoft Word
+*.doc
+*.docx
+
+# PDF
+*.pdf
